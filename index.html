@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>𝐃𝐀𝐅𝐓𝐀𝐑 𝐂𝐄𝐌𝐈𝐋𝐀𝐍 𝐆𝐑𝐀𝐂𝐄 𝐑𝐄𝐒𝐓𝐎</title>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    body { font-family: Arial, sans-serif; background: #f3f1f1; padding: 20px; color: #3508e9; }
+    h2, h3 { text-align: center; }
+    .input-area, .reset-area { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+    input, button, select { padding: 10px; border-radius: 8px; border: 1px solid #1004f5; transition: 0.3s; outline: none; }
+    input:hover, button:hover, select:hover { box-shadow: 0 0 10px #4ad9ff; }
+    button { cursor: pointer; background: #4a88ff; color: white; border: none; }
+    .resetBtn { background: #ff4a4a; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; margin-bottom: 30px; border: 1px solid #ef0404; }
+    th, td { padding: 12px; border: 1px solid #2f07fb; text-align: center; }
+    tr:hover { background: rgba(230, 238, 232, 0.1); box-shadow: inset 0 0 12px rgb(243, 244, 247); }
+    .stok-habis { color: red; font-weight: bold; }
+    canvas { margin-top: 30px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 0 12px rgba(0,0,0,0.1); }
+    @media(max-width:600px){ table, thead, tbody, th, td, tr { font-size: 12px; } }
+    .header-container {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* agar header tetap di tengah */
+    gap: 10px; /* jarak antara logo dan teks */
+    margin-bottom: 20px;
+}
+
+.header-container img.logo {
+    width: 50px;
+    height: 50px; /* pastikan tinggi sama dengan lebar agar bulat sempurna */
+    border-radius: 50%;
+    object-fit: cover; /* menjaga proporsi gambar tetap pas di dalam lingkaran */
+}
+
+
+</style>
+</head>
+<body>
+
+<div class="header-container">
+    <img src="https://i.postimg.cc/0QKW4nSD/Screenshot-3.jpg" alt="Logo" class="logo">
+    <h2>𝐃𝐀𝐅𝐓𝐀𝐑 𝐂𝐄𝐌𝐈𝐋𝐀𝐍 𝐆𝐑𝐀𝐂𝐄 𝐑𝐄𝐒𝐓𝐎</h2>
+</div>
+
+
+<!-- Input Data Barang -->
+<div class="input-area">
+    <input type="text" id="namaBarang" placeholder="Nama Barang">
+    <input type="number" id="stokAwal" placeholder="Stok Awal">
+    <input type="number" id="harga" placeholder="Harga">
+    <button onclick="tambahBarang()">𝐓𝐚𝐦𝐛𝐚𝐡 𝐁𝐚𝐫𝐚𝐧𝐠</button>
+</div>
+
+<!-- Tabel Penjualan -->
+<table>
+    <thead>
+        <tr>
+            <th>𝐍𝐚𝐦𝐚 𝐁𝐚𝐫𝐚𝐧𝐠</th>
+            <th>𝐒𝐭𝐨𝐤 𝐀𝐰𝐚𝐥</th>
+            <th>𝐒𝐭𝐨𝐤 𝐒𝐢𝐬𝐚</th>
+            <th>𝐓𝐞𝐫𝐣𝐮𝐚𝐥</th>
+            <th>𝐇𝐚𝐫𝐠𝐚</th>
+            <th>𝐓𝐨𝐭𝐚𝐥</th>
+        </tr>
+    </thead>
+    <tbody id="dataBody"></tbody>
+</table>
+
+<h3>𝐓𝐨𝐭𝐚𝐥 𝐏𝐞𝐧𝐝𝐚𝐩𝐚𝐭𝐚𝐧: 𝐑𝐩 <span id="totalPendapatan">0</span></h3>
+
+<!-- Grafik -->
+<canvas id="grafikPenjualan"></canvas>
+
+<!-- Input Data Pembeli -->
+<h3>𝐃𝐚𝐭𝐚 𝐏𝐞𝐦𝐛𝐞𝐥𝐢</h3>
+<div class="input-area">
+    <input type="text" id="namaPembeli" placeholder="Nama Pembeli">
+    <select id="pilihBarang">
+        <option value="">-- 𝐏𝐢𝐥𝐢𝐡 𝐁𝐚𝐫𝐚𝐧𝐠 --</option>
+    </select>
+    <input type="number" id="jumlahBeli" placeholder="Jumlah Beli">
+    <button onclick="tambahPembeli()">𝐓𝐚𝐦𝐛𝐚𝐡 𝐏𝐞𝐦𝐛𝐞𝐥𝐢</button>
+</div>
+
+<!-- Tabel Pembeli Horizontal Dinamis -->
+<table>
+    <thead id="headerPembeli">
+        <tr>
+            <th>𝐍𝐚𝐦𝐚 𝐏𝐞𝐦𝐛𝐞𝐥𝐢</th>
+        </tr>
+    </thead>
+    <tbody id="dataPembeliBody"></tbody>
+</table>
+
+<!-- Reset -->
+<div class="reset-area">
+    <button class="resetBtn" onclick="resetAll()">𝐑𝐞𝐬𝐞𝐭 𝐒𝐞𝐦𝐮𝐚</button>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+// ==================== FIREBASE CONFIG ======================
+const firebaseConfig = {
+  apiKey: "AIzaSyA_GuaQSaD8iqN7U27QnWYaNR3IbYWJlvo",
+  authDomain: "graceresto.firebaseapp.com",
+  projectId: "graceresto",
+  storageBucket: "graceresto.firebasestorage.app",
+  messagingSenderId: "1090466230530",
+  appId: "1:1090466230530:web:2e33caa74557d458d6d21b",
+  measurementId: "G-0VJ5GP9T29"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database().ref("penjualan");
+const pembeliRef = firebase.database().ref("pembeli");
+// ===========================================================
+
+// ==================== TAMBAH BARANG ========================
+function tambahBarang() {
+    let nama = document.getElementById("namaBarang").value;
+    let stok = parseInt(document.getElementById("stokAwal").value);
+    let harga = parseInt(document.getElementById("harga").value);
+    if (!nama || !stok || !harga) return alert("Isi semua data!");
+    let id = db.push().key;
+    db.child(id).set({ id, nama, stokAwal: stok, stokSisa: stok, terjual: 0, harga, total: 0 });
+    document.getElementById("namaBarang").value = "";
+    document.getElementById("stokAwal").value = "";
+    document.getElementById("harga").value = "";
+}
+// ===========================================================
+
+// ==================== LOAD TABEL & GRAFIK ==================
+let chart;
+function loadGrafik(labels, data) {
+    if (chart) chart.destroy();
+    const ctx = document.getElementById("grafikPenjualan");
+    chart = new Chart(ctx, {
+        type: "bar",
+        data: { labels: labels, datasets: [{ label: "Barang Terjual", data: data, backgroundColor: "#4a88ff", borderRadius: 10 }] },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+}
+
+function updatePilihanBarang(snapshot) {
+    const select = document.getElementById("pilihBarang");
+    select.innerHTML = '<option value="">-- Pilih Barang --</option>';
+    snapshot.forEach(item => {
+        let d = item.val();
+        select.innerHTML += `<option value="${d.id}" data-nama="${d.nama}" data-terjual="${d.terjual}">${d.nama}</option>`;
+    });
+}
+// ===========================================================
+
+// =================== TABEL PEMBELI DINAMIS =================
+let barangList = [];
+let pembeliData = [];
+let dbSnapshot;
+
+function updateTabelPembeli() {
+    // Update header
+    const header = document.getElementById("headerPembeli");
+    let ths = '<th>Nama Pembeli</th>';
+    barangList.forEach(b => ths += `<th>${b.nama}</th>`);
+    header.innerHTML = `<tr>${ths}</tr>`;
+
+    // Update body
+    const tbody = document.getElementById("dataPembeliBody");
+    tbody.innerHTML = '';
+    pembeliData.forEach(p => {
+        let row = `<tr><td>${p.nama}</td>`;
+        barangList.forEach(b => { row += `<td>${p.beli[b.id] || 0}</td>`; });
+        row += '</tr>';
+        tbody.innerHTML += row;
+    });
+}
+// ===========================================================
+
+// =================== UPDATE TERJUAL ========================
+function updateTerjual(id, jumlah) {
+    jumlah = parseInt(jumlah);
+    db.child(id).once("value").then(snap => {
+        let d = snap.val();
+        let stokSisa = d.stokAwal - jumlah;
+        if (stokSisa < 0) return alert("Stok tidak cukup!");
+        db.child(id).update({ terjual: jumlah, stokSisa, total: jumlah * d.harga });
+    });
+}
+// ===========================================================
+
+// =================== TAMBAH PEMBELI ========================
+function tambahPembeli() {
+    let namaPembeli = document.getElementById("namaPembeli").value;
+    let select = document.getElementById("pilihBarang");
+    let barangId = select.value;
+    let jumlahBeli = parseInt(document.getElementById("jumlahBeli").value);
+    if (!namaPembeli || !barangId || !jumlahBeli) return alert("Isi semua data pembeli!");
+
+    db.child(barangId).once("value").then(snap => {
+        let d = snap.val();
+        let stokSisa = d.stokSisa - jumlahBeli;
+        if (stokSisa < 0) return alert("Stok tidak cukup!");
+
+        // Update penjualan
+        db.child(barangId).update({
+            terjual: d.terjual + jumlahBeli,
+            stokSisa,
+            total: (d.terjual + jumlahBeli) * d.harga
+        });
+
+        // Simpan pembeli ke Firebase
+        pembeliRef.orderByChild("nama").equalTo(namaPembeli).once("value", snapshot => {
+            if (snapshot.exists()) {
+                snapshot.forEach(childSnap => {
+                    let beliData = childSnap.val().beli || {};
+                    beliData[barangId] = (beliData[barangId] || 0) + jumlahBeli;
+                    childSnap.ref.update({ beli: beliData });
+                });
+            } else {
+                let idPembeli = pembeliRef.push().key;
+                let beliData = {};
+                beliData[barangId] = jumlahBeli;
+                pembeliRef.child(idPembeli).set({ nama: namaPembeli, beli: beliData });
+            }
+        });
+
+        // Reset input
+        document.getElementById("namaPembeli").value = "";
+        document.getElementById("jumlahBeli").value = "";
+        select.value = "";
+    });
+}
+// ===========================================================
+
+// ====================== RESET ===============================
+function resetAll() {
+    if (confirm("Yakin hapus semua data?")) {
+        db.remove();
+        pembeliRef.remove();
+        pembeliData = [];
+        updateTabelPembeli();
+    }
+}
+// ===========================================================
+
+// ====================== LISTENER ===========================
+db.on("value", snapshot => {
+    dbSnapshot = snapshot;
+
+    // Update tabel penjualan & grafik
+    let body = "";
+    let totalPendapatan = 0;
+    let labels = [];
+    let jumlahJual = [];
+
+    snapshot.forEach(item => {
+        let d = item.val();
+        labels.push(d.nama);
+        jumlahJual.push(d.terjual);
+        totalPendapatan += d.total;
+        let stokClass = d.stokSisa === 0 ? "stok-habis" : "";
+        body += `<tr>
+            <td>${d.nama}</td>
+            <td>${d.stokAwal}</td>
+            <td class="${stokClass}">${d.stokSisa}</td>
+            <td><input type="number" min="0" value="${d.terjual}" onchange="updateTerjual('${d.id}', this.value)"></td>
+            <td>Rp ${d.harga}</td>
+            <td>Rp ${d.total}</td>
+        </tr>`;
+    });
+
+    document.getElementById("dataBody").innerHTML = body;
+    document.getElementById("totalPendapatan").innerText = totalPendapatan;
+    loadGrafik(labels, jumlahJual);
+
+    // Update daftar barang untuk pembeli
+    barangList = [];
+    snapshot.forEach(item => { let d = item.val(); barangList.push({ id: d.id, nama: d.nama }); });
+    updatePilihanBarang(snapshot);
+    updateTabelPembeli();
+});
+
+// Load data pembeli dari Firebase
+pembeliRef.on("value", snapshot => {
+    pembeliData = [];
+    snapshot.forEach(item => { pembeliData.push(item.val()); });
+    updateTabelPembeli();
+});
+</script>
+
+</body>
+</html>
